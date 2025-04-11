@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>URL Shortener</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #eef1f5;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 500px;
+      background: #fff;
+      padding: 20px;
+      margin: auto;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-top: 5px;
+      margin-bottom: 10px;
+      border: none;
+      border-radius: 5px;
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #short-url {
+      margin-top: 15px;
+      font-size: 16px;
+      word-wrap: break-word;
+    }
+
+    .copy-btn {
+      background-color: #28a745;
+    }
+
+    .copy-btn:hover {
+      background-color: #1e7e34;
+    }
+
+    a {
+      color: #007bff;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        width: 90%;
+        padding: 15px;
+      }
+
+      input[type="text"], button {
+        font-size: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>🔗 URL Shortener</h2>
+    <input type="text" id="longUrl" placeholder="Enter a long URL..." />
+    <button onclick="shortenUrl()">Shorten URL</button>
+
+    <div id="short-url"></div>
+    <button class="copy-btn" id="copyBtn" style="display: none;" onclick="copyShortUrl()">Copy URL</button>
+  </div>
+
+  <script>
+    function shortenUrl() {
+      var longUrl = document.getElementById("longUrl").value.trim();
+      var shortBox = document.getElementById("short-url");
+      var copyBtn = document.getElementById("copyBtn");
+  
+      if (!longUrl) {
+        alert("Please enter a valid URL.");
+        return;
+      }
+  
+      shortBox.innerHTML = "Shortening...";
+      copyBtn.style.display = "none";
+  
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", "https://tinyurl.com/api-create.php?url=" + encodeURIComponent(longUrl), true);
+  
+      xhr.onload = function () {
+        if (xhr.status === 200) {
+          var shortLink = xhr.responseText;
+          shortBox.innerHTML = 'Short URL: <a href="' + shortLink + '" target="_blank">' + shortLink + '</a>';
+          copyBtn.setAttribute("data-link", shortLink);
+          copyBtn.style.display = "inline-block";
+        } else {
+          shortBox.innerHTML = "Something went wrong. Please try again.";
+        }
+      };
+  
+      xhr.onerror = function () {
+        shortBox.innerHTML = "⚠️ Network error. Try again later.";
+      };
+  
+      xhr.send();
+    }
+  
+    function copyShortUrl() {
+      var link = document.getElementById("copyBtn").getAttribute("data-link");
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(link).then(function () {
+          alert("Copied to clipboard!");
+        }, function () {
+          fallbackCopyText(link);
+        });
+      } else {
+        fallbackCopyText(link);
+      }
+    }
+  
+    function fallbackCopyText(text) {
+      var textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.position = "fixed";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      try {
+        var successful = document.execCommand('copy');
+        alert(successful ? "Copied!" : "Failed to copy");
+      } catch (err) {
+        alert("Copy not supported in this browser");
+      }
+      document.body.removeChild(textArea);
+    }
+  </script>
+  
+
+</body>
+</html>
